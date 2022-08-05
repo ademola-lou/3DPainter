@@ -1,0 +1,23 @@
+.top-bar {
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    width: 0px; 
+    background-image: linear-gradient(teal, white);
+    /* linear-gradient(to bottom right, brown, white); */
+    z-index: 1;
+    /* background-color: gray; */
+    /* color: silver; */
+}
+#renderCanvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+#renderCanvas:focus {
+    outline: 0;
+    border:none;
+    color: rgba(0, 0, 0, 0);
+}
