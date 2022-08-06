@@ -126,12 +126,14 @@ export function paintMaterial(matcapurl){
     rtex2.renderList.push(background);
 
     let mat = new BABYLON.StandardMaterial("", scene);
-    mat.specularColor = BABYLON.Color3.Black();
+    // mat.specularColor = BABYLON.Color3.Black();
     // mat.disableLighting = true;
 
     // var matCapTexture = new BABYLON.Texture(matcapurl, scene);
     // matCapTexture.coordinatesMode = BABYLON.Texture.SPHERICAL_MODE;
     // mat.reflectionTexture = matCapTexture;
+    mat.bumpTexture = new BABYLON.Texture("assets/images/normalMaps/fabric.jpg");
+    mat.bumpTexture.level = 0.1;
     mat.diffuseTexture = rtex2;
 
     startPainting(shaderMaterialPaintDensity, rtDensity);

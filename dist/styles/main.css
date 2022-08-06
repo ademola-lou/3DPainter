@@ -4,7 +4,8 @@
     left: 50%;
     transform: translate(-50%, 0%);
     width: 0px; 
-    background-image: linear-gradient(teal, white);
+    background-color: black;
+    /* background-image: linear-gradient(teal, white); */
     /* linear-gradient(to bottom right, brown, white); */
     z-index: 1;
     /* background-color: gray; */
@@ -21,3 +22,32 @@
     border:none;
     color: rgba(0, 0, 0, 0);
 }
+i{
+    color: white;
+}
+
+/* .tooltiptext {
+    visibility: visible;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: 120%;
+    left: 0%;
+  } */
+  
+/* .tooltiptext::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 20%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent black transparent;
+  } */
+  

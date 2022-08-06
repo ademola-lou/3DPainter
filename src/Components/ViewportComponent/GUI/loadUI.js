@@ -8,7 +8,7 @@ panel.width = "220px";
 panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
 panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
 advancedTexture.addControl(panel);
-// panel.spacing = 7
+panel.spacing = 7
 
 addLockButton(advancedTexture);
 
@@ -49,7 +49,7 @@ function openColorWheelButton(panel, colorWheel, size){
         ellipse1.width = size +"px";
         ellipse1.height = size +"px";
         ellipse1.color = "Orange";
-        ellipse1.thickness = 2;
+        ellipse1.thickness = 4;
         ellipse1.background = `rgb(${255 * states.color.r}, ${ 255 * states.color.g}, ${ 255 * states.color.b})`;
         button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         button.left = 10;
@@ -121,19 +121,40 @@ function addSlider(panel, radius, offset, isVertical, isClamped, displayThumb){
 }
 
 function addLockButton(panel){
-    var button = BABYLON.GUI.Button.CreateImageOnlyButton(
-        "but",
-        "assets/images/ui/padlock-unlock.png"
-      );
-    button.width = "30px";
-    button.height = "30px";
-    button.color = "red"
-    button.thickness = 0;
-    button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    button.top = 180;
-    button.left = 20;
-    panel.addControl(button);
+    // var button = BABYLON.GUI.Button.CreateSimpleButton(
+    //     "but",
+    //     "lock"
+    //   );
+    // button.width = "60px";
+    // button.height = "30px";
+    // button.color = "red"
+    // button.thickness = 0;
+    // button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    // button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+    // button.top = 180;
+    // button.left = 10;
+    // panel.addControl(button);
+    
+    let size = 30;
+    const button = new BABYLON.GUI.Button('button');
+        button.width = size +"px";
+        button.height = size +"px";
+        button.color = "white";
+        button.thickness = 0;
+        button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        button.top = 180;
+        button.left = 20;
+
+    const ellipse1 = new BABYLON.GUI.Ellipse();
+        ellipse1.width = size +"px";
+        ellipse1.height = size +"px";
+        ellipse1.color = "Orange";
+        ellipse1.thickness = 2;
+        ellipse1.background = "red"
+        button.addControl(ellipse1); 
+        panel.addControl(button)
+
     
     const camera = scene.activeCamera;
     const canvas = document.getElementById("renderCanvas");
@@ -141,11 +162,11 @@ function addLockButton(panel){
     button.onPointerClickObservable.add(()=>{
         states.lockScreen = !states.lockScreen;
         if(states.lockScreen){
-            button.children[0].source = "assets/images/ui/lock.png";
+            button.children[0].background = "green";
             camera.detachControl();
             
         }else{
-            button.children[0].source = "assets/images/ui/padlock-unlock.png";
+            button.children[0].background = "red";
             camera.attachControl(canvas, true)
             
         }

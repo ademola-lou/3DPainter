@@ -1,0 +1,21 @@
+{
+    "name": "3D Painter \nProductiveLad ©",
+    "short_name": "3D Painter",
+    "description": "A 3D Painting app",
+    "icons": [
+      {
+        "sizes": "192x192",
+        "type": "image/png",
+        "src": "assets/images/launcherIcons/android-launchericon-192-192.png"
+      },
+      {
+        "sizes": "512x512",
+        "type": "image/png",
+        "src": "assets/images/launcherIcons/android-launchericon-512-512.png"
+      }
+    ],
+    "background_color": "yellow",
+    "theme_color": "yellow",
+    "start_url": "/index.html",
+    "display": "fullscreen"
+  }

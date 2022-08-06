@@ -27,7 +27,7 @@ async function renderScene(canvas){
     // matCap.diffuseTexture = rtex2;
     const matCap = paintMaterial("assets/images/matcaps/AtmosphericGlowMatcap.png");
     // matcap-porcelain-white.jpg
-    const url = "assets/models/fantasy_dagger.obj";
+    const url = "assets/models/vans.obj";
     // "https://cdn.glitch.me/2d9651bd-507d-44d5-b9f0-c7c3795f5b73/human.obj?v=1657822205641"
     const loadedMesh = await loadModel(url, matCap);
     camera.setTarget(loadedMesh.position);
@@ -42,7 +42,7 @@ async function renderScene(canvas){
         groundShadowLevel: 0.6,
     });       
 
-    helper.setMainColor(new BABYLON.Color3.FromHexString("#202122"));
+    helper.setMainColor(new BABYLON.Color3.FromHexString("#2e5090"));
 }
 export function ViewportRenderer(){
     let renderCanvas = React.createRef();

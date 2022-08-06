@@ -82,7 +82,7 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
             });
 
             //reset state
-            document.querySelector("#color_eyedropper").style.color = "black";
+            document.querySelector("#color_eyedropper").style.color = "white";
             states.enablePickColor = false;
         }
         if(states.enableFillColor){
