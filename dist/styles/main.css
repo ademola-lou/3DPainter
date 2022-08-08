@@ -5,12 +5,26 @@
     transform: translate(-50%, 0%);
     width: 0px; 
     background-color: black;
+    z-index: 1;
+}
+.foot-bar {
+    position: absolute;
+    bottom: -45%;
+    left: 2%;
+    /* transform: translate(-50%, 0%); */
+    width: 0%;
+    height: 50%;
+    background-color: black;
+    color: white;
+    text-align: center;
+    transition: bottom 400ms;
     /* background-image: linear-gradient(teal, white); */
     /* linear-gradient(to bottom right, brown, white); */
     z-index: 1;
     /* background-color: gray; */
     /* color: silver; */
 }
+
 #renderCanvas {
     position: absolute;
     width: 100%;
@@ -22,32 +36,38 @@
     border:none;
     color: rgba(0, 0, 0, 0);
 }
+
+input[type="checkbox"]:focus{
+    outline:0;
+}
 i{
     color: white;
 }
 
-/* .tooltiptext {
-    visibility: visible;
-    width: 120px;
+#promptDialog {
+    visibility: hidden;
+    width: 160px;
     background-color: black;
     color: #fff;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
-    z-index: 1;
-    top: 120%;
-    left: 0%;
-  } */
+    z-index: 3;
+    top: -35%;
+    left: 30%;
+    /* top: 120%;
+    left: 0%; */
+  }
   
-/* .tooltiptext::after {
+#promptDialog::after {
     content: "";
     position: absolute;
-    bottom: 100%;
-    left: 20%;
+    top: 100%;
+    left: 50%;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: transparent transparent black transparent;
-  } */
+    border-color: black transparent transparent transparent;
+  }
   

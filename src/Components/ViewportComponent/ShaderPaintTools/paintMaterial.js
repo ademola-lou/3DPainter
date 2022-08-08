@@ -1,5 +1,7 @@
 import { states } from "../../../utils/state";
 import { startPainting } from "./paintFunction";
+import { PROMPT_CHANGES } from "../../MenuBarComponent/footMenuBar";
+import { applyBrushSettings, BRUSH_SETTINGS } from "../../../utils/brushesSetting";
 
 const createShader = function(name, vs, fs, scene) {
     return new BABYLON.ShaderMaterial(name, scene, {
@@ -27,13 +29,17 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
     BABYLON.Effect.ShadersStore["addDensityFragmentShader"]=`
 	   precision highp float;
         varying vec2 vUV;
-    	uniform vec4 brush; // position.xy, radius, strength
+    	uniform vec3 brush; // position.xy, radius
         uniform vec4 brushColor; // 
     	uniform sampler2D textureSampler;
         uniform sampler2D brushSampler;
         uniform vec3 clearColor;
         uniform float erase;
         uniform float fill;
+        uniform float strength;
+        uniform float opacity;
+        uniform float brightness;
+        uniform float mixTexture;
 
         float circle(in vec2 _st, in float _radius){
             float dist =  1. - distance(vUV, brush.xy) / brush.z;
@@ -59,10 +65,18 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
             }else{
                 adjColor = brushColor.xyz;
             }
-            float dist = 1. - distance(vUV, brush.xy) / radius;
-            float brightness = 1.0;
 
-            gl_FragColor = vec4((adjColor.xyz)* brightness, dist * 1.0);
+            if(mixTexture == 1.0){
+                if(erase == 1.0){
+                    adjColor = clearColor.xyz;
+                }else{
+                    adjColor *= brushTexture.rgb;
+                }
+            }
+
+            float dist = 1. - distance(vUV, brush.xy) / radius;
+
+            gl_FragColor = vec4((adjColor.xyz)+ brightness, (dist * strength));
     	}`;
 
     BABYLON.Effect.ShadersStore["drawRTFragmentShader"]=`
@@ -99,10 +113,8 @@ export function paintMaterial(matcapurl){
     let rtDensity = new BABYLON.RenderTargetTexture('Density', resolution, scene, BABYLON.TextureFormat.RG16Float);
     rtDensity.clearColor = global.scene.clearColor;
     scene.customRenderTargets.push(rtDensity);
-    //"https://cdn.glitch.me/fd1d2870-1b72-40d3-ac1f-4f21f7e4f0ef/fantasywood.jpg?v=1657786090090"
-    let rtex = new BABYLON.Texture("assets/images/brushes/organic.jpg", scene)
+    
     shaderMaterial2.setTexture("textureSampler", rtDensity);
-    shaderMaterialPaintDensity.setTexture("brushSampler", rtex)
     camera.layerMask = 1;
 
     // in RTT
@@ -110,7 +122,6 @@ export function paintMaterial(matcapurl){
    
     shaderMaterialPaintDensity.alpha = 0.9999;
     // shaderMaterialPaintDensity.alphaMode = BABYLON.Engine.ALPHA_ADD;
-    shaderMaterialPaintDensity.setVector4("brush", new BABYLON.Vector4(0,0,0,0));
 	planDensity.material = shaderMaterialPaintDensity;
     planDensity.layerMask = 2
 
@@ -126,14 +137,12 @@ export function paintMaterial(matcapurl){
     rtex2.renderList.push(background);
 
     let mat = new BABYLON.StandardMaterial("", scene);
-    // mat.specularColor = BABYLON.Color3.Black();
+    mat.specularColor = BABYLON.Color3.Black();
     // mat.disableLighting = true;
 
-    // var matCapTexture = new BABYLON.Texture(matcapurl, scene);
-    // matCapTexture.coordinatesMode = BABYLON.Texture.SPHERICAL_MODE;
-    // mat.reflectionTexture = matCapTexture;
-    mat.bumpTexture = new BABYLON.Texture("assets/images/normalMaps/fabric.jpg");
-    mat.bumpTexture.level = 0.1;
+    var matCapTexture = new BABYLON.Texture(matcapurl, scene);
+    matCapTexture.coordinatesMode = BABYLON.Texture.SPHERICAL_MODE;
+    
     mat.diffuseTexture = rtex2;
 
     startPainting(shaderMaterialPaintDensity, rtDensity);
@@ -152,6 +161,26 @@ export function paintMaterial(matcapurl){
         setTimeout(()=>{
             rtDensity.skipInitialClear = true;
         }, 100)
+    });
+
+    document.addEventListener(PROMPT_CHANGES[1], ev=>{
+        if(states.matcapUrl.includes("assets/images/matcaps/SlateGreyMatcap.png")){
+            matCapTexture.updateURL(states.matcapUrl+"");
+            mat.reflectionTexture = null;
+        }else{
+            matCapTexture.updateURL(states.matcapUrl+"");
+            mat.reflectionTexture = matCapTexture;
+        }
+
+    });
+
+    document.addEventListener("applyBrush", ev =>{
+        applyBrushSettings(shaderMaterialPaintDensity, BRUSH_SETTINGS[ev.detail]);
+        states.currentBrush = BRUSH_SETTINGS[ev.detail];
+    });
+
+    document.addEventListener("applyMixTexture", () =>{
+        shaderMaterialPaintDensity.setTexture("brushSampler", new BABYLON.Texture(states.currentBrush.textureUrl+"", global.scene));
     })
     return mat;
 }

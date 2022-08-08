@@ -24,21 +24,23 @@ sliderpanel.cornerRadius = 20
 sliderpanel.thickness = 0;
 panel.addControl(sliderpanel);
 
-const brushSizeControl = addSlider(sliderpanel, states.radius, 25, true, false, true);
-const brushOpacityControl = addSlider(sliderpanel, states.radius, 5, true, false, true);
+const brushSizeControl = addSlider(sliderpanel, states.currentBrush.radius, 25, 0.05);
+const brushBrightnessControl = addSlider(sliderpanel, states.currentBrush.brightness, 5, 1.0);
 
 brushSizeControl.onValueChangedObservable.add(function(value) {
-    states.radius = value;
+    states.currentBrush.radius = value;
 });
 
-// sliderRadius.onValueChangedObservable.add(function(value) {
-//     radius = value;
-// });
+brushBrightnessControl.onValueChangedObservable.add(function(value) {
+    states.currentBrush.brightness = value;
+});
 
 openColorWheelButton(panel, addColorWheel(advancedTexture), 50);
 }
 
 function openColorWheelButton(panel, colorWheel, size){
+    const {color} = states.currentBrush;
+
     const button = new BABYLON.GUI.Button('button');
         button.width = size +"px";
         button.height = size +"px";
@@ -50,7 +52,7 @@ function openColorWheelButton(panel, colorWheel, size){
         ellipse1.height = size +"px";
         ellipse1.color = "Orange";
         ellipse1.thickness = 4;
-        ellipse1.background = `rgb(${255 * states.color.r}, ${ 255 * states.color.g}, ${ 255 * states.color.b})`;
+        ellipse1.background = `rgb(${255 * color.r}, ${ 255 * color.g}, ${ 255 * color.b})`;
         button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         button.left = 10;
         button.addControl(ellipse1); 
@@ -66,8 +68,10 @@ function openColorWheelButton(panel, colorWheel, size){
     })
     //update pallete
     document.addEventListener("updatePallete", ev =>{
+        const {color} = states.currentBrush;
+
         ellipse1.background = `rgb(${255 * ev.detail.r}, ${ 255 * ev.detail.g}, ${ 255 * ev.detail.b})`;
-        colorWheel.value = new BABYLON.Color3(states.color.r, states.color.g, states.color.b)
+        colorWheel.value = new BABYLON.Color3(color.r, color.g, color.b)
     })
     
     scene.onPointerUp = function(){
@@ -82,9 +86,12 @@ function addColorWheel(panel){
     picker.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
     picker.isVisible = false;
     picker.isEnabled = false;
+
+    const {color} = states.currentBrush;
+
     picker.onValueChangedObservable.add(function(value) {
-        states.color.set(value.r, value.g, value.b);
-        document.dispatchEvent(new CustomEvent("colorPicked", {detail: states.color}));
+        color.set(value.r, value.g, value.b);
+        document.dispatchEvent(new CustomEvent("colorPicked", {detail: color}));
     });
     panel.addControl(picker);
     
@@ -92,27 +99,21 @@ function addColorWheel(panel){
     return picker;
 }
 
-function addSlider(panel, radius, offset, isVertical, isClamped, displayThumb){
-    const slider = new BABYLON.GUI.ImageBasedSlider();
+function addSlider(panel, radius, offset, max){
+    const slider = new BABYLON.GUI.Slider();
     slider.minimum = 0;
-    slider.maximum = 0.05;
+    slider.maximum = max;
     slider.value = radius;
     slider.width = "20px";
     slider.height = "200px";
-    slider.isVertical = isVertical;
-    slider.isThumbClamped = isClamped;
-    slider.displayThumb = displayThumb;
+    slider.color = "rgb(45, 25, 25)";
+    slider.background = "#2e5090";
+    slider.isThumbCircle = true;
+    slider.isVertical = true;
+    slider.isThumbClamped = true;
+    slider.displayThumb = true;
     slider.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     slider.left = offset;
-    if (!isVertical) {
-        slider.backgroundImage = new BABYLON.GUI.Image("back", "https://playground.babylonjs.com/textures/gui/backgroundImage.png");
-        slider.valueBarImage = new BABYLON.GUI.Image("value", "https://playground.babylonjs.com/textures/gui/valueImage.png");
-    }
-    else {
-        slider.backgroundImage = new BABYLON.GUI.Image("back", "https://playground.babylonjs.com/textures/gui/backgroundImage-vertical.png");
-        slider.valueBarImage = new BABYLON.GUI.Image("value", "https://playground.babylonjs.com/textures/gui/valueImage-vertical.png");
-    }
-    slider.thumbImage = new BABYLON.GUI.Image("thumb", "https://playground.babylonjs.com/textures/gui/thumb.png");
 
     panel.addControl(slider)
 
@@ -121,19 +122,6 @@ function addSlider(panel, radius, offset, isVertical, isClamped, displayThumb){
 }
 
 function addLockButton(panel){
-    // var button = BABYLON.GUI.Button.CreateSimpleButton(
-    //     "but",
-    //     "lock"
-    //   );
-    // button.width = "60px";
-    // button.height = "30px";
-    // button.color = "red"
-    // button.thickness = 0;
-    // button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    // button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    // button.top = 180;
-    // button.left = 10;
-    // panel.addControl(button);
     
     let size = 30;
     const button = new BABYLON.GUI.Button('button');
@@ -150,12 +138,12 @@ function addLockButton(panel){
         ellipse1.width = size +"px";
         ellipse1.height = size +"px";
         ellipse1.color = "Orange";
-        ellipse1.thickness = 2;
+        ellipse1.thickness = 5;
         ellipse1.background = "red"
         button.addControl(ellipse1); 
         panel.addControl(button)
 
-    
+
     const camera = scene.activeCamera;
     const canvas = document.getElementById("renderCanvas");
     

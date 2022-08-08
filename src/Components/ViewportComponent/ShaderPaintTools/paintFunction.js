@@ -1,7 +1,14 @@
+import { applyBrushSettings, BRUSH_SETTINGS } from "../../../utils/brushesSetting";
 import { states } from "../../../utils/state";
 
 export function startPainting(shaderMaterialPaintDensity, rtDensity){
-    let {radius, strength, color, lockScreen} = states;
+    //use default brush settings
+    states.currentBrush = BRUSH_SETTINGS.default;
+    applyBrushSettings(shaderMaterialPaintDensity, states.currentBrush, true);
+
+    let {strength, color} = states.currentBrush;
+    let {radius, lockScreen} = states;
+
     const engine = scene.getEngine();
     // handle draw
     let pointerDown = false;
@@ -28,13 +35,14 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
                 return;
             }
 
-			let fact = states.radius * (states.radius / 100);
+			let fact = states.currentBrush.radius * (states.currentBrush.radius / 100);
 			var centerX = texcoords.x - (size.width * fact);
 			var centerY = texcoords.y - (size.height * fact);
 
             const x = texcoords.x - (size.width * fact);
             const y = texcoords.y + (size.height * fact);
-            shaderMaterialPaintDensity.setVector4("brush", new BABYLON.Vector4(x, y, states.radius, strength));
+            shaderMaterialPaintDensity.setVector3("brush", new BABYLON.Vector4(x, y, states.currentBrush.radius));
+            shaderMaterialPaintDensity.setFloat("brightness", states.currentBrush.brightness);
             shaderMaterialPaintDensity.setVector4("brushColor", new BABYLON.Vector4(color.r, color.g, color.b, 1.));
         }
     }, BABYLON.PointerEventTypes.POINTERMOVE);
@@ -42,7 +50,7 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
     scene.onPointerObservable.add(({ event }) => {
 
         pointerDown = false;
-        shaderMaterialPaintDensity.setVector4("brush", new BABYLON.Vector4(0,0,0,0));
+        shaderMaterialPaintDensity.setVector3("brush", new BABYLON.Vector4(0,0,0));
 
         if(states.enablePickColor){
 
