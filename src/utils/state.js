@@ -4,7 +4,9 @@ export const states = {
     enableFillColor: false,
     eraserEnabled: false,
     matcapUrl: null,
-    currentBrush: null
+    currentBrush: null,
+    currentSelectedObjectId: null,
+    selectionMode: false
 }
 
 window.states = states;

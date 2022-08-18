@@ -131,9 +131,24 @@ export function paintMaterial(matcapurl, objectName){
     shaderMaterialPaintDensity.alpha = 0.9999;
     shaderMaterialPaintDensity.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
 	planDensity.material = shaderMaterialPaintDensity;
-    planDensity.layerMask = 2;
+    planDensity.layerMask = 2
 
-    rtDensity.renderList.push(planDensity)
+    // var sphere = BABYLON.MeshBuilder.CreateBox("sphere", {size: 1, sideOrientation: 0}, scene);
+   
+    // sphere.material = new BABYLON.StandardMaterial("mat", scene);
+    // sphere.material.specularColor = BABYLON.Color3.Black();
+    // sphere.material.disableLighting = true;
+    // sphere.material.emissiveColor = BABYLON.Color3.White();
+    // sphere.material.diffuseTexture = new BABYLON.Texture("assets/images/pepsi.png");
+    // sphere.material.diffuseTexture.hasAlpha = true;
+    // sphere.layerMask = 2;
+    // sphere.parent = camera
+    // sphere.position.z += 5
+    // planDensity.parent = camera
+    // planDensity.position.z += 5
+    // planDensity.renderingGroupId = 2
+
+    rtDensity.renderList.push(planDensity)//, sphere);
     rtDensity.setMaterialForRendering(planDensity, shaderMaterialPaintDensity);
 
     let rtex2 =new BABYLON.RenderTargetTexture(objectName+'Foundation', resolution, scene, BABYLON.TextureFormat.RGA16Float);

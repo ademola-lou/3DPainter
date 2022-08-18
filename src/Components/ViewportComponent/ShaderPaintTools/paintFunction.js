@@ -1,7 +1,7 @@
 import { applyBrushSettings, BRUSH_SETTINGS } from "../../../utils/brushesSetting";
 import { states } from "../../../utils/state";
 
-export function startPainting(shaderMaterialPaintDensity, rtDensity){
+export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName){
     //use default brush settings
     states.currentBrush = BRUSH_SETTINGS.default;
     applyBrushSettings(shaderMaterialPaintDensity, states.currentBrush, true);
@@ -13,13 +13,18 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
     // handle draw
     let pointerDown = false;
     scene.onPointerObservable.add(({ event }) => {
+        if(states.currentSelectedObjectId !== objectName){
+            return;
+        }
         pointerDown = true;
     }, BABYLON.PointerEventTypes.POINTERDOWN);
 
     let size = rtDensity.getSize();
 
     scene.onPointerObservable.add(({ event }) => {
-     
+        if(states.currentSelectedObjectId !== objectName){
+            return;
+        }
         if (pointerDown && states.lockScreen) {
            
             const canvas = engine.getRenderingCanvas();
@@ -48,23 +53,41 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
     }, BABYLON.PointerEventTypes.POINTERMOVE);
     
     scene.onPointerObservable.add(({ event }) => {
-
+        if(states.currentSelectedObjectId !== objectName){
+            return;
+        }
         pointerDown = false;
         shaderMaterialPaintDensity.setVector3("brush", new BABYLON.Vector4(0,0,0));
-
-        if(states.enablePickColor){
-
+        
+        if(states.selectionMode){
             let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
                 if (mesh.name !== "editUV") {
                     return false;
                 }
                 return true;
             });		
-            var texcoords = pickResult.getTextureCoordinates();
-            if(!texcoords){
-                return;
-            }
 
+            if(pickResult.hit){
+                const layersList = document.getElementsByClassName("ObjectlayersList");
+                for (let i=0; i < layersList.length; i++) {
+                    layersList[i].style.color = "white";
+                }
+                document.getElementById(pickResult.pickedMesh.originalName+"_layer").style.color = "orange";
+                states.currentSelectedObjectId = pickResult.pickedMesh.originalName;
+                document.dispatchEvent(new CustomEvent("SelectObjectLayer"));
+            }
+        }
+
+        if(states.enablePickColor){
+            let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
+                if (mesh.name !== "editUV") {
+                    return false;
+                }
+                return true;
+            });		
+
+            var texcoords = pickResult.getTextureCoordinates();
+            if(texcoords){
             let texture = rtDensity;
             let uv = texcoords;
 
@@ -92,6 +115,7 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity){
             //reset state
             document.querySelector("#color_eyedropper").style.color = "white";
             states.enablePickColor = false;
+          }
         }
         if(states.enableFillColor){
             console.log("apply fill color")

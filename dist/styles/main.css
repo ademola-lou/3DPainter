@@ -1,3 +1,4 @@
+@import url('http://fonts.cdnfonts.com/css/nexa-bold');
 .top-bar {
     position: absolute;
     top: 0%;
@@ -44,7 +45,7 @@ i{
     color: white;
 }
 
-#promptDialog {
+.promptDialog {
     visibility: hidden;
     width: 160px;
     background-color: black;
@@ -60,7 +61,7 @@ i{
     left: 0%; */
   }
   
-#promptDialog::after {
+.promptDialog::after {
     content: "";
     position: absolute;
     top: 100%;

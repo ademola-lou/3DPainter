@@ -31,13 +31,14 @@ async function renderScene(canvas){
     // matCap.diffuseTexture = rtex2;
     const matCap = paintMaterial("assets/images/matcaps/AtmosphericGlowMatcap.png");
     // matcap-porcelain-white.jpg
-    const url = "assets/models/dragonhead.obj";
+    const url = "assets/models/vans.obj";
+    console.log(url, url.split('.').pop())
     // "https://cdn.glitch.me/2d9651bd-507d-44d5-b9f0-c7c3795f5b73/human.obj?v=1657822205641"
-    const loadedMesh = await loadModel(url, matCap);
+    const loadedMesh = await loadModel(url);
     camera.setTarget(loadedMesh.position);
 
     global.loadedMesh = loadedMesh;
-    global.currentMat = matCap;
+    // global.currentMat = matCap;
     //GUI
     startUI();
 

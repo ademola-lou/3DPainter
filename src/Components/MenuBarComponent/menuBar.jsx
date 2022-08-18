@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { applyBrushSettings, BRUSH_SETTINGS } from '../../utils/brushesSetting';
 import { states } from '../../utils/state';
+import { loadModel } from '../ViewportComponent/ViewportUtils';
 
 export function MenuBar(){
 function enableEraser(ev){
@@ -30,26 +31,25 @@ function togglePickColor(ev){
     states.enablePickColor = !states.enablePickColor;
     ev.target.style.color = states.enablePickColor ? "red" : "white";
 }
+function selectObject(ev){
+    states.selectionMode = !states.selectionMode;
+    if(states.selectionMode){
+    ev.target.style.color = "red";
+    }else{
+    ev.target.style.color = "white";
+    }
+}
 useEffect(()=>{
     const onSelectFile = async () => {
-        if(global.loadedMesh){
-            scene.getMeshesById("editUV").forEach(mesh =>{
-                mesh.dispose();
-            });
-        }
-            
+            if(file_opener.files.length > 0){
+            document.dispatchEvent(new CustomEvent("clearCurrentCanvas"));
+
             const url = URL.createObjectURL(file_opener.files[0]);
             const ext = file_opener.files[0].name.split('.').pop();
+            
+            await loadModel(url, true, ext);
 
-            const result = await BABYLON.SceneLoader.ImportMeshAsync("", url, "", scene, null, `.${ext}`);
-            result.meshes.forEach(mesh=>{
-                mesh.name = "editUV";
-                mesh.material = global.currentMat;
-                mesh.renderingGroupId = 2;
-                mesh.normalizeToUnitCube();
-            })
-            global.loadedMesh = result.meshes[0];
-            document.dispatchEvent(new CustomEvent("clearCurrentCanvas"))
+            }
             
     };
 
@@ -121,6 +121,9 @@ function toggleFillColor(ev){
         document.dispatchEvent(new CustomEvent("applyFillColor"));
     }
 }
+function toggleLightOptions(){
+    document.dispatchEvent(new CustomEvent("toggleLightOptions"))
+}
 function selectBrush(ev, val){
     if(!states.currentBrush){
         return;
@@ -145,9 +148,10 @@ function selectBrush(ev, val){
         <div onClick={enableEraser} style={{}}><i className='eraser icon'></i></div>
         <button className='circular' onClick={togglePickColor}><i className="eye dropper icon" id="color_eyedropper"></i></button>
         <button className='circular' onClick={toggleFillColor}><i className="bi bi-paint-bucket"></i></button>
+        <button className='circular' onClick={selectObject}><i className="bi bi-hand-index"></i></button>
         <button className='circular' onClick={importModel}><i className="bi bi-file-earmark-arrow-down-fill"></i></button>
         <button className='circular' onClick={downloadModel}><i className="bi bi-share-fill"></i></button>
-        <button className='circular' onClick={downloadModel}><i class="bi bi-lightbulb"></i></button>
+        <button className='circular' onClick={toggleLightOptions}><i className="bi bi-lightbulb"></i></button>
         </div>
         <button className='circular w-16 h-16 object-right p-5'><i className='bi bi-grid-3x3-gap'></i><div id="tooltip1">Menu</div></button>
         {/* <button className='circular ui button w-16 h-16 object-right p-5'><i className='bi bi-grid-3x3-gap'></i></button> */}

@@ -29,7 +29,6 @@ export function applyBrushSettings(brushShader, settings, reset = false){
         brushShader.setFloat("opacity", settings.opacity);
         brushShader.setFloat("brightness", settings.brightness);
     }else{
-        console.log("ok oo", states.currentBrush, settings)
         settings.radius = states.currentBrush.radius;
         settings.strength = states.currentBrush.strength;
         settings.opacity = states.currentBrush.opacity;
@@ -38,7 +37,6 @@ export function applyBrushSettings(brushShader, settings, reset = false){
     }
     brushShader.setFloat("mixTexture", settings.mixTexture);
     let mix_texture = new BABYLON.Texture(DEFAULT_TEXTURE_URL+"", global.scene);
-    console.log("size", mix_texture)
     brushShader.setTexture("brushSampler", mix_texture);
     if(settings.mixTexture){
         brushShader.setTexture("brushSampler", new BABYLON.Texture(settings.textureUrl+"", global.scene));
