@@ -12,11 +12,29 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
     const engine = scene.getEngine();
     // handle draw
     let pointerDown = false;
+    let startTime = 0, endTime = 0;
+    let isDoubleTapped = false;
     scene.onPointerObservable.add(({ event }) => {
         if(states.currentSelectedObjectId !== objectName){
             return;
         }
-        pointerDown = true;
+        let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
+            if (mesh.state !== "editUV") {
+                return false;
+            }
+            return true;
+        });	
+        if(pickResult.hit && states.lockScreen){
+            let currentPlane = scene.getMeshByName(objectName+"LayerPlane");
+            let undoRtex = scene.getTextureByName("undoTexture");
+            undoRtex.refreshRate = 1;
+            undoRtex.renderList[0] = currentPlane;
+            undoRtex.refreshRate = 0;
+            
+            setTimeout(()=>{
+                pointerDown = true;
+            }, 10);
+        }
     }, BABYLON.PointerEventTypes.POINTERDOWN);
 
     let size = rtDensity.getSize();
@@ -30,7 +48,7 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
             const canvas = engine.getRenderingCanvas();
 
             let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
-                if (mesh.name !== "editUV") {
+                if (mesh.state !== "editUV") {
                     return false;
                 }
                 return true;
@@ -59,13 +77,15 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
         pointerDown = false;
         shaderMaterialPaintDensity.setVector3("brush", new BABYLON.Vector4(0,0,0));
         
-        if(states.selectionMode){
-            let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
-                if (mesh.name !== "editUV") {
-                    return false;
-                }
-                return true;
-            });		
+        let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
+            if (!mesh.state.includes("editUV")) {
+                return false;
+            }
+            return true;
+        });	
+
+
+        if(states.selectionMode){	
 
             if(pickResult.hit){
                 const layersList = document.getElementsByClassName("ObjectlayersList");
@@ -78,13 +98,7 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
             }
         }
 
-        if(states.enablePickColor){
-            let pickResult = scene.pick(scene.pointerX, scene.pointerY, function predicate(mesh) {
-                if (mesh.name !== "editUV") {
-                    return false;
-                }
-                return true;
-            });		
+        if(states.enablePickColor){	
 
             var texcoords = pickResult.getTextureCoordinates();
             if(texcoords){
@@ -121,9 +135,25 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
             console.log("apply fill color")
             document.dispatchEvent(new CustomEvent("applyFillColor"));
         }
+
     }, BABYLON.PointerEventTypes.POINTERUP);
     
-    // rtDensity.onClearObservable.add(()=>{});
+    scene.onPointerObservable.add(()=>{
+        isDoubleTapped = true;
+        if(states.currentSelectedObjectId !== objectName){
+            return;
+        }
+        let undoRtex = scene.getTextureByName("undoTexture");
+        shaderMaterialPaintDensity.setFloat("undo", true);
+        shaderMaterialPaintDensity.setTexture("brushSampler", undoRtex);
+        
+        setTimeout(()=>{
+            shaderMaterialPaintDensity.setFloat("undo", false);
+            
+        }, 100)
+        
+    }, BABYLON.PointerEventTypes.POINTERDOUBLETAP);
+
     setTimeout(()=>{
         rtDensity.skipInitialClear = true;
     }, 100);

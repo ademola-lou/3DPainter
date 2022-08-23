@@ -38,6 +38,7 @@ const onSelectFile = () => {
 
         let divider = document.createElement("div");
         divider.className = "ui fitted divider";
+        object_new_layer.dividerElem = divider;
         document.querySelector("#layersTemplate").appendChild(divider);
 
         function selectActiveLayerButton(){
@@ -129,7 +130,7 @@ const onSelectFile = () => {
 
   function addNewLayer(name){
     let new_layer = document.createElement("div");
-    new_layer.className = "layersList"
+    new_layer.className = "layersList";
     let sideOptions = document.querySelector("#layerOptions").cloneNode(true);
     new_layer.textContent = "-"+name+" Layer";
     new_layer.style.fontWeight = "normal";
@@ -174,34 +175,27 @@ const onSelectFile = () => {
                 <i className="bi bi-chevron-up" onClick={toggleFootBarMenu}></i>
 
                 <div id="matcapDialog" className='promptDialog flex flex-col gap-3'>
-                <span id="promptMessage" className='rounded-b border-b'>apply matcap?</span>
+                <span id="promptMessage" className='rounded-b border-b'></span>
                 <button onClick={applyPromptChange}>Yes</button>
                 <button onClick={applyPromptChange}>No</button>
                 </div>
 
                 <div id="layerDialog" className='promptDialog flex flex-col gap-3'>
-                <span id="promptMessage" className='rounded-b border-b'>apply matcap?</span>
+                <span id="promptMessage" className='rounded-b border-b'></span>
                 <button onClick={applyPromptChange}>Base</button>
                 <button onClick={applyPromptChange}>Normal</button>
                 <button onClick={applyPromptChange}>Ambient</button>
                 <button onClick={applyPromptChange}>Close</button>
-                {/* <div id="layerPrompt" className='visible'>
-                <button className='circular ui button' onClick={applyPromptChange}>Base</button>
-                <button className='circular ui button' onClick={applyPromptChange}>Normal</button>
-                <button className='circular ui button' onClick={applyPromptChange}>Ambient</button>
-                </div> */}
 
                 </div>
-                {/* </div> */}
-                {/* <div class="hstack gap-3"> */}
                 <div className='flex flex-row gap-5' style={{
                     height: "100%"
                 }}>
                     <div className="flex flex-col gap-5" style={{textAlign: "left"}}>
                         <button className='ui circular' onClick={openMatcaps}><img src="assets/images/matcaps/SlateGreyMatcap.png" className='w-16 h-16'></img></button>
-                        <button className='ui circular ghost-button' onClick={openLayers}><i className="bi bi-layers"></i></button>
-                        <button className='ui circular' onClick={openBrushSettings}><i className="bi bi-gear"></i></button>
-                        <button className='ui circular'><i className="bi bi-diagram-2"></i></button>
+                        <button className='icon-button ui circular ghost-button' onClick={openLayers}><i className="bi bi-layers"></i></button>
+                        <button className='icon-button ui circular' onClick={openBrushSettings}><i className="bi bi-gear"></i></button>
+                        <button className='icon-button ui circular'><i className="bi bi-diagram-2"></i></button>
                     </div>
                     <div className="rounded border-l border-white" style={{
                         width: "100%",

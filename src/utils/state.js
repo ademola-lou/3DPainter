@@ -6,7 +6,8 @@ export const states = {
     matcapUrl: null,
     currentBrush: null,
     currentSelectedObjectId: null,
-    selectionMode: false
+    selectionMode: false,
+    currentLayer: null
 }
 
 window.states = states;

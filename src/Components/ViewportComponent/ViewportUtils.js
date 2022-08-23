@@ -10,8 +10,17 @@ export async function loadModel(url, clearLayer = false, ext){
         ext = url.split('.').pop();
     }
     if(clearLayer){
-        document.querySelector("#layersTemplate").innerHTML = "";
+        let layersContainer = document.querySelectorAll(".ObjectlayersList");
+
+        layersContainer.forEach(elem =>{
+            elem.dividerElem.remove();
+            elem.remove();
+
+            elem.dividerElem = null;
+            elem = null;
+        });
     }
+
     let result = await BABYLON.SceneLoader.ImportMeshAsync("", url, "", scene, null, `.${ext}`);
     container = new BABYLON.Mesh("modelContainer");
     global.modelResult = result;
@@ -19,8 +28,7 @@ export async function loadModel(url, clearLayer = false, ext){
     result.meshes.forEach(mesh=>{
         if(mesh.geometry){
             mesh.originalName = mesh.name;
-            mesh.name = "editUV";
-            mesh.id = "editUV";
+            mesh.state = "editUV";
             mesh.material = paintMaterial("assets/images/matcaps/AtmosphericGlowMatcap.png", mesh.originalName);
             mesh.renderingGroupId = 2;
             mesh.parent = container;
@@ -28,26 +36,28 @@ export async function loadModel(url, clearLayer = false, ext){
         }
     })
 
-    if(!clearLayer){
-    document.addEventListener("toggleSelectedObjectEdge", ()=>{
-        global.modelResult.meshes.forEach(mesh=>{
-            if(mesh.originalName !== states.currentSelectedObjectId){
-                mesh.visibility = 0.5;
-            }else{
-                mesh.visibility = 1.0;
-            }
-        })
-    });
-
-    document.addEventListener("toggleLightOptions", ()=>{
-        global.modelResult.meshes.forEach(mesh=>{
-            mesh.visibility = 1;
-        })
-    });
-    }
     container.normalizeToUnitCube();
     container.scaling.scaleInPlace(2);
 
     let rootmesh = result.meshes[0];
     return rootmesh;
 }
+
+document.addEventListener("toggleSelectedObjectEdge", ()=>{
+    global.modelResult.meshes.forEach(mesh=>{
+        if(mesh.originalName !== states.currentSelectedObjectId){
+            mesh.visibility = 0.5;
+            mesh.state = "hiddeneditUV";
+        }else{
+            mesh.visibility = 1.0;
+            mesh.state = "editUV";
+        }
+    })
+});
+
+document.addEventListener("toggleLightOptions", ()=>{
+    global.modelResult.meshes.forEach(mesh=>{
+        mesh.visibility = 1;
+        mesh.state = "editUV";
+    })
+});

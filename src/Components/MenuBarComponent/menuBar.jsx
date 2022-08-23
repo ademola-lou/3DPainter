@@ -130,28 +130,31 @@ function selectBrush(ev, val){
     }
     document.dispatchEvent(new CustomEvent("applyBrush", {detail: val}));
 }
+function undoChange(){
+    document.dispatchEvent(new CustomEvent("undo"))
+}
  return (
     <div className="navbar rounded-b top-bar shadow-lg border-b border-black" style={{
         width: "95%"
     }}>
         <div className='flex-1 gap-5 top-bar-tools p-5'>
         <input type="file" style={{display: "none"}} id="fileOpener" ref={file_dom}></input>
-        {/* <button className='circular'><i className='pencil icon' id="pencilTool"></i></button> */}
-        <button className='circular'><i className='paint brush icon'></i><div id="tooltip0" className='flex flex-col'>
+        <i className='icon-button paint brush icon'>
+            <div id="tooltip0" className='flex flex-col' style={{width: "300px", height: "300px"}}>
             Brushes
-            <div className='flex flex-row'>
+            <div className='flex flex-row gap-2'>
             <button className='ui circular' onClick={ev => selectBrush(ev, "default")} value="ok"><img src="assets/images/brushes/thumbnails/brush1.png" className='w-16 h-16'></img></button>
             <button className='ui circular' onClick={ev => selectBrush(ev, "textured")}><img src="assets/images/brushes/thumbnails/brush2.png" className='w-16 h-16'></img></button>
             </div>
-        </div></button>
+        </div></i>
 
-        <div onClick={enableEraser} style={{}}><i className='eraser icon'></i></div>
-        <button className='circular' onClick={togglePickColor}><i className="eye dropper icon" id="color_eyedropper"></i></button>
-        <button className='circular' onClick={toggleFillColor}><i className="bi bi-paint-bucket"></i></button>
-        <button className='circular' onClick={selectObject}><i className="bi bi-hand-index"></i></button>
-        <button className='circular' onClick={importModel}><i className="bi bi-file-earmark-arrow-down-fill"></i></button>
-        <button className='circular' onClick={downloadModel}><i className="bi bi-share-fill"></i></button>
-        <button className='circular' onClick={toggleLightOptions}><i className="bi bi-lightbulb"></i></button>
+        <i className='icon-button eraser icon' onClick={enableEraser}></i>
+        <i className="icon-button eye dropper icon" id="color_eyedropper" onClick={togglePickColor}></i>
+        <i className="icon-button bi bi-paint-bucket" onClick={toggleFillColor}></i>
+        <i className="icon-button bi bi-hand-index" onClick={selectObject}></i>
+        <i className="icon-button bi bi-file-earmark-arrow-down-fill" onClick={importModel}></i>
+        <i className="icon-button bi bi-share-fill" onClick={downloadModel}></i>
+        <i className="icon-button bi bi-lightbulb" onClick={toggleLightOptions}></i>
         </div>
         <button className='circular w-16 h-16 object-right p-5'><i className='bi bi-grid-3x3-gap'></i><div id="tooltip1">Menu</div></button>
         {/* <button className='circular ui button w-16 h-16 object-right p-5'><i className='bi bi-grid-3x3-gap'></i></button> */}

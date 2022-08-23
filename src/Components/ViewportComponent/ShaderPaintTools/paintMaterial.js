@@ -40,6 +40,8 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
         uniform float opacity;
         uniform float brightness;
         uniform float mixTexture;
+        uniform float clear;
+        uniform float undo;
 
         float circle(in vec2 _st, in float _radius){
             float dist =  1. - distance(vUV, brush.xy) / brush.z;
@@ -60,6 +62,7 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
             }else{
                 radius = brush.z;
             }
+
             if(erase == 1.0){
                 adjColor = clearColor.xyz;
             }else{
@@ -72,6 +75,16 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
                 }else{
                     adjColor *= brushTexture.rgb;
                 }
+            }
+            float undoChanges = undo;
+            if(undo == 1.0){
+                radius = 1000.0;
+                adjColor = brushTexture.rgb;
+            }
+
+            if(clear == 1.0){
+                radius = 1000.0;
+                adjColor = clearColor.xyz;
             }
 
             float dist = 1. - distance(vUV, brush.xy) / radius;
@@ -114,6 +127,8 @@ export function paintMaterial(matcapurl, objectName){
     const shaderMaterialPaintDensity = createShader("shaderDensity", "custom", "addDensity", scene);
     shaderMaterialPaintDensity.setFloat("erase", false);
     shaderMaterialPaintDensity.setFloat("fill", false);
+    shaderMaterialPaintDensity.setFloat("undo", false);
+    shaderMaterialPaintDensity.setFloat("clear", false);
     shaderMaterialPaintDensity.setColor3("clearColor", global.scene.clearColor);
 
     const resolution = 1024;
@@ -126,7 +141,7 @@ export function paintMaterial(matcapurl, objectName){
     camera.layerMask = 1;
 
     // in RTT
-    var planDensity = BABYLON.MeshBuilder.CreatePlane("plan", {size:1}, scene);
+    var planDensity = BABYLON.MeshBuilder.CreatePlane(objectName+"plan", {size:1}, scene);
    
     shaderMaterialPaintDensity.alpha = 0.9999;
     shaderMaterialPaintDensity.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
@@ -139,7 +154,8 @@ export function paintMaterial(matcapurl, objectName){
     let rtex2 =new BABYLON.RenderTargetTexture(objectName+'Foundation', resolution, scene, BABYLON.TextureFormat.RGA16Float);
     rtex2._base = true;
     scene.customRenderTargets.push(rtex2);
-    let background = BABYLON.MeshBuilder.CreatePlane("plan", {size:1}, scene);
+
+    let background = BABYLON.MeshBuilder.CreatePlane(objectName+"LayerPlane", {size:1}, scene);
     background.material = shaderMaterial2;
     background.layerMask = 2
     rtex2.renderList.push(background);
@@ -270,7 +286,6 @@ export function paintMaterial(matcapurl, objectName){
         document.removeEventListener("applyMixTexture", functionE);
         document.removeEventListener("addLayer", functionF);
         document.removeEventListener("selectLayer", functionG);
-
         document.removeEventListener("clearCurrentCanvas", functionH);
     }
     document.addEventListener("clearCurrentCanvas", functionH);
