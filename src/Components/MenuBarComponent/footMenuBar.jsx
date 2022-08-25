@@ -69,6 +69,7 @@ function applyBrushSettingsToLayer(){
         console.log("brush settings", BRUSH_SETTINGS[ev.detail])
         let settings = BRUSH_SETTINGS[ev.detail];
         document.getElementById("useTexturelabel").checked = settings.mixTexture;
+        document.getElementById("useTextureAlphalabel").checked = settings.applyMixTextureAlpha;
         document.getElementById("useAlphaTexturelabel").checked = settings.useAlphaTexture;
         document.getElementById("textureThumbnail").src = settings.textureUrl;
     })
@@ -188,6 +189,9 @@ function applyBrushSettingsToLayer(){
   function applyMixTexture(ev){
       states.currentBrush.mixTexture = ev.target.checked;
   }
+  function applyMixTextureAlpha(ev){
+    states.currentBrush.applyMixTextureAlpha = ev.target.checked;
+  }
   function applyAlphaTexture(ev){
     states.currentBrush.useAlphaTexture = ev.target.checked;
   }
@@ -278,6 +282,10 @@ function applyBrushSettingsToLayer(){
                             <div>
                                 Use Texture
                                 <input id="useTexturelabel" type="checkbox" className="checkbox" onClick={applyMixTexture} style={{float: "right"}}/>
+                            </div>
+                            <div>
+                                Use Texture Alpha
+                                <input id="useTextureAlphalabel" type="checkbox" className="checkbox" onClick={applyMixTextureAlpha} style={{float: "right"}}/>
                             </div>
                             <div style={{display: "flex", justifyContent: "center"}}>
                                 <img src="assets/images/brushes/uv_grid_opengl.jpg" id="textureThumbnail" className='w-16 h-16'></img>

@@ -46,6 +46,7 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
         uniform float clear;
         uniform float undo;
         uniform float invertAlphaTexture;
+        uniform float applyMixTextureAlpha;
 
         float circle(in vec2 _st, in float _radius){
             float dist =  1. - distance(vUV, brush.xy) / brush.z;
@@ -61,7 +62,14 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
     	void main(void) {
             vec2 _st = vUV.xy;
 
-            vec4 brushTexture = texture2D(brushSampler, vec2(vUV.xy + brush.xy)).xyzw;
+            vec2 brushCoord = vec2(vUV.xy - brush.xy).xy;
+
+            if(applyMixTextureAlpha == 1.0){
+            float n =10.0;
+            brushCoord = (brushCoord - 0.5) * scale(vec2(n, n)) + 0.5;
+            }
+
+            vec4 brushTexture = texture2D(brushSampler, brushCoord).xyzw;
             vec4 undoTexture = texture2D(undoSampler, vec2(vUV.xy + brush.xy)).xyzw;
             vec4 brushAlphaTexture = vec4(0.0);
             vec3 rtTexture = texture2D(textureSampler, vec2(vUV.x + brush.x, vUV.y + brush.y)).xyz;
@@ -119,6 +127,9 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
                 }
             }
 
+            if(mixTexture == 1.0 && applyMixTextureAlpha == 1.0){
+                dist *= brushTexture.a;
+            }
             gl_FragColor = vec4((adjColor.xyz), (dist));
     	}`;
 

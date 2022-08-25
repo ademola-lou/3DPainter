@@ -146,6 +146,7 @@ function undoChange(){
             <button className='ui circular' onClick={ev => selectBrush(ev, "default")} value="ok"><img src="assets/images/brushes/thumbnails/brush1.png" className='w-16 h-16'></img></button>
             <button className='ui circular' onClick={ev => selectBrush(ev, "textured")}><img src="assets/images/brushes/thumbnails/brush2.png" className='w-16 h-16'></img></button>
             <button className='ui circular' onClick={ev => selectBrush(ev, "alpha")}><img src="assets/images/brushes/thumbnails/brush2.png" className='w-16 h-16'></img></button>
+            <button className='ui circular' onClick={ev => selectBrush(ev, "texturedAlpha")}><img src="assets/images/pepsi.png" className='w-16 h-16'></img></button>
             </div>
         </div></i>
 

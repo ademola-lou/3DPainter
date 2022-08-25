@@ -3,7 +3,6 @@ import { states } from "./state";
 const DEFAULT_TEXTURE_URL = "assets/images/brushes/uv_grid_opengl.jpg";
 const DEFAULT_ALPHA_TEXTURE_URL = "assets/images/brushes/skin1.png";
 let global_texture;
-//"assets/images/brushes/textured_brush.jpg"//"assets/images/brushes/organic.jpg"
 export const BRUSH_SETTINGS = {
     "default": {
         "radius": 0.04,
@@ -15,7 +14,8 @@ export const BRUSH_SETTINGS = {
         "textureUrl": DEFAULT_TEXTURE_URL,
         "useAlphaTexture": false,
         "alphaTextureUrl": DEFAULT_ALPHA_TEXTURE_URL,
-        "invertAlphaTexture": false
+        "invertAlphaTexture": false,
+        "applyMixTextureAlpha": false
     },
     "textured": {
         "radius": 0.04,
@@ -27,7 +27,8 @@ export const BRUSH_SETTINGS = {
         "textureUrl": DEFAULT_TEXTURE_URL,
         "useAlphaTexture": false,
         "alphaTextureUrl": DEFAULT_ALPHA_TEXTURE_URL,
-        "invertAlphaTexture": false
+        "invertAlphaTexture": false,
+        "applyMixTextureAlpha": false
     },
     "alpha": {
         "radius": 0.04,
@@ -39,8 +40,22 @@ export const BRUSH_SETTINGS = {
         "textureUrl": DEFAULT_TEXTURE_URL,
         "useAlphaTexture": true,
         "alphaTextureUrl": DEFAULT_ALPHA_TEXTURE_URL,
-        "invertAlphaTexture": false
-    }
+        "invertAlphaTexture": false,
+        "applyMixTextureAlpha": false
+    },
+    "texturedAlpha": {
+        "radius": 0.04,
+        "strength": 1.0,
+        "color": BABYLON.Color3.White(),
+        "brightness": 0.0,
+        "opacity": 0.05,
+        "mixTexture": true,
+        "textureUrl": "assets/images/pepsi.png",
+        "useAlphaTexture": false,
+        "alphaTextureUrl": DEFAULT_ALPHA_TEXTURE_URL,
+        "invertAlphaTexture": false,
+        "applyMixTextureAlpha": true
+    },
 }
 
 export function applyBrushSettings(brushShader, settings, reset = false){
@@ -62,6 +77,7 @@ export function applyBrushSettings(brushShader, settings, reset = false){
     }
     brushShader.setFloat("useAlphaTexture", settings.useAlphaTexture);
     brushShader.setFloat("mixTexture", settings.mixTexture);
+    brushShader.setFloat("applyMixTextureAlpha", settings.applyMixTextureAlpha);
     brushShader.setTexture("undoSampler", global_texture);
     brushShader.setTexture("brushAlphaSampler", global_texture);
     brushShader.setFloat("invertAlphaTexture", settings.invertAlphaTexture);
