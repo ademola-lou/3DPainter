@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { BRUSH_SETTINGS } from '../../utils/brushesSetting';
 import { states } from '../../utils/state';
 
 export const PROMPT_CHANGES = {
@@ -6,7 +7,7 @@ export const PROMPT_CHANGES = {
   1: "apply matcap",
   2: "Add layer"
 }
-
+let imageOpenerId;
 export function FootMenuBar(){
 
 let footbarmenu, prompt_c;
@@ -14,11 +15,18 @@ let image_opener;
 
 const onSelectFile = () => {
     const url = URL.createObjectURL(image_opener.files[0]);
-    document.getElementById("textureThumbnail").src = url;
-    states.currentBrush.textureUrl = url;
-    document.dispatchEvent(new CustomEvent("applyMixTexture"))
+    if(imageOpenerId === "textureImage"){
+        document.getElementById("textureThumbnail").src = url;
+        states.currentBrush.textureUrl = url;
+    }else if(imageOpenerId === "alphaTextureImage"){
+        document.getElementById("alphaTextureThumbnail").src = url;
+        states.currentBrush.alphaTextureUrl = url;
+    }
     image_opener.value = "";
+}
 
+function applyBrushSettingsToLayer(){
+    document.dispatchEvent(new CustomEvent("updateBrushSettings"));
 }
   useEffect(()=>{
     footbarmenu = document.querySelector(".foot-bar");
@@ -56,6 +64,14 @@ const onSelectFile = () => {
             selectActiveLayerButton();
         };
     });
+
+    document.addEventListener("applyBrush", ev=>{
+        console.log("brush settings", BRUSH_SETTINGS[ev.detail])
+        let settings = BRUSH_SETTINGS[ev.detail];
+        document.getElementById("useTexturelabel").checked = settings.mixTexture;
+        document.getElementById("useAlphaTexturelabel").checked = settings.useAlphaTexture;
+        document.getElementById("textureThumbnail").src = settings.textureUrl;
+    })
   }, []);
 
   let showFootBarMenu = false;
@@ -109,7 +125,8 @@ const onSelectFile = () => {
     
   }
 
-  function openImageFolder(){
+  function openImageFolder(ev){
+    imageOpenerId = ev.target.id;
     image_opener.click();
   }
   function openBrushSettings(){
@@ -167,6 +184,16 @@ const onSelectFile = () => {
       })
     )
   }
+
+  function applyMixTexture(ev){
+      states.currentBrush.mixTexture = ev.target.checked;
+  }
+  function applyAlphaTexture(ev){
+    states.currentBrush.useAlphaTexture = ev.target.checked;
+  }
+  function invertAlphaTexture(ev){
+      states.currentBrush.invertAlphaTexture = ev.target.checked;
+  }
     return (
             <div className="rounded foot-bar shadow-lg border-b border-black" style={{
                 width: "95%",
@@ -218,7 +245,8 @@ const onSelectFile = () => {
                         </div>
 
                         </div>
-                        <div className='matcapthumbnails visible' style={{textAlign: "left"}}>
+                        <div className='matcapthumbnails visible'>
+                        <div className='overflow-y-scroll' style={{textAlign: "left", height: "10em"}}>
                             <button className='ui circular' onClick={applyMatCap}><img src="assets/images/matcaps/metal.jpg" className='w-16 h-16'></img></button>
                             <button className='ui circular' onClick={applyMatCap}><img src="assets/images/matcaps/normalmatcap.jpg" className='w-16 h-16'></img></button>
                             <button className='ui circular' onClick={applyMatCap}><img src="assets/images/matcaps/AtmosphericGlowMatcap.png" className='w-16 h-16'></img></button>
@@ -227,8 +255,16 @@ const onSelectFile = () => {
                             <button className='ui circular' onClick={applyMatCap}><img src="assets/images/matcaps/anime_matcap.png" className='w-16 h-16'></img></button>
                             <button className='ui circular' onClick={applyMatCap}><img src="assets/images/matcaps/genshin_matcap.jpg" className='w-16 h-16'></img></button>
                         </div>
+                        <div className='ui fitted divider'></div>
+                        {/* Use PBR Materials? */}
+                        <div style={{textAlign: "start"}}>
+                                Use Pbr?
+                                <input id="usePbrMaterial" type="checkbox" className="checkbox" defaultChecked={"checked"} onClick={applyAlphaTexture} style={{float: "right"}}/>
+                            </div>
+                        <div className='ui fitted divider'></div>
+                        </div>
 
-                        <div className='brushSettings flex flex-col gap-2 hidden'>
+                        <div className='overflow-y-scroll brushSettings flex flex-col gap-2 hidden' style={{height: "15em"}}>
                             <div>
                                 Brush Strength
                             <input type="range" min="0" max="100" defaultValue={40} className="range" id="brushStrength"/>
@@ -238,19 +274,38 @@ const onSelectFile = () => {
                                 Brush Brightness
                             <input type="range" min="0" max="100" defaultValue={40} className="range" id="brushStrength"/>
                             </div>
-
+                            {/* Add mix texture */}
                             <div>
                                 Use Texture
-                                <input type="checkbox" className="checkbox" style={{float: "right"}}/>
+                                <input id="useTexturelabel" type="checkbox" className="checkbox" onClick={applyMixTexture} style={{float: "right"}}/>
                             </div>
                             <div style={{display: "flex", justifyContent: "center"}}>
-                                <img src="assets/images/matcaps/metal.jpg" id="textureThumbnail" className='w-16 h-16'></img>
+                                <img src="assets/images/brushes/uv_grid_opengl.jpg" id="textureThumbnail" className='w-16 h-16'></img>
                             </div>
-                            <button className='btn' onClick={openImageFolder}>
+                            <button className='btn' id="textureImage" onClick={openImageFolder}>
                                 Add image
                             </button>
+
+                            {/* Add alpha texture */}
+                            <div>
+                                Use Alpha Texture
+                                <input id="useAlphaTexturelabel" type="checkbox" className="checkbox" onClick={applyAlphaTexture} style={{float: "right"}}/>
+                            </div>
+                            <div style={{display: "flex", justifyContent: "center"}}>
+                                <img src="assets/images/brushes/skin1.png" id="alphaTextureThumbnail" className='w-16 h-16'></img>
+                            </div>
+                            <button className='btn' id="alphaTextureImage" onClick={openImageFolder}>
+                                Add image
+                            </button>
+                            <div>
+                                Invert Alpha Texture
+                                <input type="checkbox" className="checkbox" onClick={invertAlphaTexture} style={{float: "right"}}/>
+                            </div>
+
                             
-                            
+                            <div className='ui fitted divider'></div><div className='ui fitted divider'></div>
+                            <button className='btn' onClick={applyBrushSettingsToLayer}>Apply Changes?</button>
+                            <button className='btn'>Save Brush</button>
                         </div>
 
                     </div>

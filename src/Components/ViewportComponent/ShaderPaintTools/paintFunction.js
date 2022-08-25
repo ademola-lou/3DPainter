@@ -1,6 +1,7 @@
 import { applyBrushSettings, BRUSH_SETTINGS } from "../../../utils/brushesSetting";
+import { UNDO_CACHE_LIMIT } from "../../../utils/SaveTexture";
 import { states } from "../../../utils/state";
-
+let undoCacheIndex = 0;
 export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName){
     //use default brush settings
     states.currentBrush = BRUSH_SETTINGS.default;
@@ -26,7 +27,8 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
         });	
         if(pickResult.hit && states.lockScreen){
             let currentPlane = scene.getMeshByName(objectName+"LayerPlane");
-            let undoRtex = scene.getTextureByName("undoTexture");
+            let undoRtex = scene.getTextureByName("undoTexture"+undoCacheIndex);
+            undoRtex.freshCache = true;
             undoRtex.refreshRate = 1;
             undoRtex.renderList[0] = currentPlane;
             undoRtex.refreshRate = 0;
@@ -34,6 +36,8 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
             setTimeout(()=>{
                 pointerDown = true;
             }, 10);
+
+            undoCacheIndex = ++undoCacheIndex % UNDO_CACHE_LIMIT;
         }
     }, BABYLON.PointerEventTypes.POINTERDOWN);
 
@@ -85,18 +89,18 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
         });	
 
 
-        if(states.selectionMode){	
+        // if(states.selectionMode){	
 
-            if(pickResult.hit){
-                const layersList = document.getElementsByClassName("ObjectlayersList");
-                for (let i=0; i < layersList.length; i++) {
-                    layersList[i].style.color = "white";
-                }
-                document.getElementById(pickResult.pickedMesh.originalName+"_layer").style.color = "orange";
-                states.currentSelectedObjectId = pickResult.pickedMesh.originalName;
-                document.dispatchEvent(new CustomEvent("SelectObjectLayer"));
-            }
-        }
+        //     if(pickResult.hit){
+        //         const layersList = document.getElementsByClassName("ObjectlayersList");
+        //         for (let i=0; i < layersList.length; i++) {
+        //             layersList[i].style.color = "white";
+        //         }
+        //         document.getElementById(pickResult.pickedMesh.originalName+"_layer").style.color = "orange";
+        //         states.currentSelectedObjectId = pickResult.pickedMesh.originalName;
+        //         document.dispatchEvent(new CustomEvent("SelectObjectLayer"));
+        //     }
+        // }
 
         if(states.enablePickColor){	
 
@@ -138,21 +142,44 @@ export function startPainting(shaderMaterialPaintDensity, rtDensity, objectName)
 
     }, BABYLON.PointerEventTypes.POINTERUP);
     
-    scene.onPointerObservable.add(()=>{
-        isDoubleTapped = true;
+    // scene.onPointerObservable.add(()=>{
+        // if(states.currentSelectedObjectId !== objectName){
+        //     return;
+        // }
+        // let undoRtex = scene.getTextureByName("undoTexture");
+        // shaderMaterialPaintDensity.setFloat("undo", true);
+        // shaderMaterialPaintDensity.setTexture("brushSampler", undoRtex);
+        
+        // setTimeout(()=>{
+        //     shaderMaterialPaintDensity.setFloat("undo", false);
+            
+        // }, 100)
+        
+    // }, BABYLON.PointerEventTypes.POINTERDOUBLETAP);
+
+    document.addEventListener("undoChanges", ()=>{
         if(states.currentSelectedObjectId !== objectName){
             return;
         }
-        let undoRtex = scene.getTextureByName("undoTexture");
+        if(undoCacheIndex == 0){
+            undoCacheIndex = UNDO_CACHE_LIMIT;
+        }
+        undoCacheIndex = --undoCacheIndex % UNDO_CACHE_LIMIT;
+
+        let undoRtex = scene.getTextureByName("undoTexture"+undoCacheIndex);
+        
+        if(undoRtex.freshCache === false){
+            return;
+        }
         shaderMaterialPaintDensity.setFloat("undo", true);
-        shaderMaterialPaintDensity.setTexture("brushSampler", undoRtex);
+        shaderMaterialPaintDensity.setTexture("undoSampler", undoRtex);
         
         setTimeout(()=>{
             shaderMaterialPaintDensity.setFloat("undo", false);
-            
-        }, 100)
-        
-    }, BABYLON.PointerEventTypes.POINTERDOUBLETAP);
+        }, 100);
+
+        undoRtex.freshCache = false;
+    });
 
     setTimeout(()=>{
         rtDensity.skipInitialClear = true;

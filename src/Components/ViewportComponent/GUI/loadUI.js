@@ -25,17 +25,33 @@ sliderpanel.thickness = 0;
 panel.addControl(sliderpanel);
 
 const brushSizeControl = addSlider(sliderpanel, states.currentBrush.radius, 25, 0.05);
-const brushBrightnessControl = addSlider(sliderpanel, states.currentBrush.brightness, 5, 1.0);
+const brushBrightnessControl = addSlider(sliderpanel, states.currentBrush.brightness, 5, 10.0);
 
 brushSizeControl.onValueChangedObservable.add(function(value) {
     states.currentBrush.radius = value;
 });
 
 brushBrightnessControl.onValueChangedObservable.add(function(value) {
-    states.currentBrush.brightness = value;
+    states.currentBrush.brightness = value * 10;
+    console.log("opacity val: ", value, (value * 10))
 });
 
 openColorWheelButton(panel, addColorWheel(advancedTexture), 50);
+
+const undoButton = BABYLON.GUI.Button.CreateSimpleButton("but1", "undo");
+undoButton.width = "50px";
+undoButton.height = "50px";
+undoButton.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+undoButton.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+undoButton.left = "12px";
+undoButton.thickness = 5;
+undoButton.cornerRadius = 50;
+panel.addControl(undoButton);
+
+undoButton.onPointerDownObservable.add(()=>{
+    document.dispatchEvent(new CustomEvent("undoChanges"));
+});
+
 }
 
 function openColorWheelButton(panel, colorWheel, size){
@@ -61,7 +77,7 @@ function openColorWheelButton(panel, colorWheel, size){
     button.onPointerDownObservable.add(()=>{
         colorWheel.isVisible = !colorWheel.isVisible;
         colorWheel.isEnabled = !colorWheel.isEnabled;
-    })
+    });
 
     document.addEventListener("colorPicked", ev =>{
         ellipse1.background = `rgb(${255 * ev.detail.r}, ${ 255 * ev.detail.g}, ${ 255 * ev.detail.b})`;

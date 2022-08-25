@@ -33,6 +33,8 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
         uniform vec4 brushColor; // 
     	uniform sampler2D textureSampler;
         uniform sampler2D brushSampler;
+        uniform sampler2D brushAlphaSampler;
+        uniform sampler2D undoSampler;
         uniform vec3 clearColor;
         uniform float erase;
         uniform float fill;
@@ -40,8 +42,10 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
         uniform float opacity;
         uniform float brightness;
         uniform float mixTexture;
+        uniform float useAlphaTexture;
         uniform float clear;
         uniform float undo;
+        uniform float invertAlphaTexture;
 
         float circle(in vec2 _st, in float _radius){
             float dist =  1. - distance(vUV, brush.xy) / brush.z;
@@ -50,13 +54,32 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
                                 dist*4.0);
         }
 
+        mat2 scale(vec2 _scale){
+            return mat2(_scale.x,0.0,
+                        0.0,_scale.y);
+        }
     	void main(void) {
-            vec2 _st = gl_FragCoord.xy;
-            vec3 brushTexture = texture2D(brushSampler, vec2(vUV.x + brush.x, vUV.y + brush.y)).xyz;
-             vec3 rtTexture = texture2D(textureSampler, vec2(vUV.x + brush.x, vUV.y + brush.y)).xyz;
-           
+            vec2 _st = vUV.xy;
+
+            vec4 brushTexture = texture2D(brushSampler, vec2(vUV.xy + brush.xy)).xyzw;
+            vec4 undoTexture = texture2D(undoSampler, vec2(vUV.xy + brush.xy)).xyzw;
+            vec4 brushAlphaTexture = vec4(0.0);
+            vec3 rtTexture = texture2D(textureSampler, vec2(vUV.x + brush.x, vUV.y + brush.y)).xyz;
+
+            if(useAlphaTexture == 1.0){
+            vec2 final = ((_st-brush.xy) * 1.).xy;
+            float n =20.0;
+            final = scale(vec2(n, n)) * final;
+
+                brushAlphaTexture = texture2D(brushAlphaSampler, final).rrrr;
+                if(brushAlphaTexture.r == 0.0){
+                    brushAlphaTexture.a = 0.0;
+                }
+            }
+
             float radius = brush.z;
             vec3 adjColor = brushColor.xyz;
+            
             if(fill == 1.0){
                 radius = 1000.0;
             }else{
@@ -76,20 +99,27 @@ BABYLON.Effect.ShadersStore["customVertexShader"]= `
                     adjColor *= brushTexture.rgb;
                 }
             }
-            float undoChanges = undo;
+            
             if(undo == 1.0){
                 radius = 1000.0;
-                adjColor = brushTexture.rgb;
-            }
-
-            if(clear == 1.0){
-                radius = 1000.0;
-                adjColor = clearColor.xyz;
+                adjColor = undoTexture.rgb;
             }
 
             float dist = 1. - distance(vUV, brush.xy) / radius;
 
-            gl_FragColor = vec4((adjColor.xyz)+ brightness, (dist * strength));
+            dist *= (brightness == 0.0 ? 1.0 : 1.0 / brightness);
+
+            if(useAlphaTexture == 1.0){
+                if(undo != 1.0){
+                    if(invertAlphaTexture == 1.0){
+                        dist += brushAlphaTexture.a;
+                    }else{
+                        dist *= brushAlphaTexture.a;
+                    }
+                }
+            }
+
+            gl_FragColor = vec4((adjColor.xyz), (dist));
     	}`;
 
     BABYLON.Effect.ShadersStore["drawRTFragmentShader"]=`
@@ -150,7 +180,7 @@ export function paintMaterial(matcapurl, objectName){
 
     rtDensity.renderList.push(planDensity)
     rtDensity.setMaterialForRendering(planDensity, shaderMaterialPaintDensity);
-
+    
     let rtex2 =new BABYLON.RenderTargetTexture(objectName+'Foundation', resolution, scene, BABYLON.TextureFormat.RGA16Float);
     rtex2._base = true;
     scene.customRenderTargets.push(rtex2);
@@ -168,7 +198,7 @@ export function paintMaterial(matcapurl, objectName){
 
     var matCapTexture = new BABYLON.Texture(matcapurl, scene);
     matCapTexture.coordinatesMode = BABYLON.Texture.SPHERICAL_MODE;
-    
+    rtex2.hasAlpha = true
     mat.albedoTexture = rtex2;
 
     startPainting(shaderMaterialPaintDensity, rtDensity, objectName);
@@ -212,13 +242,13 @@ export function paintMaterial(matcapurl, objectName){
     }
     document.addEventListener("applyBrush", functionD);
 
-    let functionE = ()=>{
+    let functionE = (ev)=>{
         if(states.currentSelectedObjectId !== objectName){
             return;
         }
-        shaderMaterialPaintDensity.setTexture("brushSampler", new BABYLON.Texture(states.currentBrush.textureUrl+"", global.scene));
+        applyBrushSettings(shaderMaterialPaintDensity, states.currentBrush);
     }
-    document.addEventListener("applyMixTexture", functionE);
+    document.addEventListener("updateBrushSettings", functionE);
 
     //new layers
     shaderMaterial2.setTexture("combineSampler", new BABYLON.RawTexture(null, 512, 512));
@@ -299,7 +329,9 @@ document.addEventListener("SelectObjectLayer", () =>{
             rt.refreshRate = 0;
         }
     });
+    if(scene.getTextureByName(states.currentSelectedObjectId+"Density")){
     scene.getTextureByName(states.currentSelectedObjectId+"Density").refreshRate = 1;
     scene.getTextureByName(states.currentSelectedObjectId+"Foundation").refreshRate = 1;
+    }
     document.dispatchEvent(new CustomEvent("toggleSelectedObjectEdge"));
 });
